@@ -1,0 +1,38 @@
+🚀 GitHub + Vercel 배포 가이드
+================================
+
+현재 상태:
+✅ Git 저장소 초기화 완료
+✅ 모든 파일 커밋 완료
+✅ 배포 스크립트 준비 완료
+
+다음 단계:
+
+1️⃣ GitHub에 저장소 생성
+   방법 A (자동 - GitHub CLI 사용):
+   ./setup_github.sh
+   
+   방법 B (수동):
+   - https://github.com/new 접속
+   - 저장소 이름 입력 (예: polymarket-dashboard)
+   - "Create repository" 클릭
+   - 다음 명령어 실행:
+     git remote add origin https://github.com/YOUR_USERNAME/polymarket-dashboard.git
+     git push -u origin main
+
+2️⃣ Vercel에 배포
+   방법 A (웹사이트 - 추천):
+   - https://vercel.com/new 접속
+   - GitHub 저장소 선택
+   - "Deploy" 클릭
+   
+   방법 B (CLI):
+   npm install -g vercel
+   vercel --prod
+
+3️⃣ 완료!
+   배포된 URL에서 대시보드 확인
+
+💡 빠른 배포:
+   export GITHUB_REPO_URL=https://github.com/YOUR_USERNAME/polymarket-dashboard.git
+   ./deploy.sh
