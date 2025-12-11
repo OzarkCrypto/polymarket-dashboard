@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/scrape-py/index.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install && pip install -r requirements-vercel.txt"
+}
+

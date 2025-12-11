@@ -1,0 +1,88 @@
+======================================================================
+📊 BINANCE FUTURES - ALL LISTINGS ANALYSIS SINCE 2023
+======================================================================
+Analysis Date: 2025-12-09 19:16:40
+Analysis Target: All coins listed since 2023-01-01
+Successfully analyzed: 419 coins
+Failed: 0 coins
+
+🎯 Overall Performance Summary:
+  Total Win Rate: 38.7% (162/419)
+  Average Return: 100.9%
+  Median Return: 91.7%
+  Standard Deviation: 47.2%
+  Best Performance: 458.8%
+  Worst Performance: 7.4%
+
+⏰ Win Rate by Key Time Points:
+    0min: 100.0%
+   15min:  52.5%
+   30min:  50.4%
+      1h:  49.2%
+      2h:  49.4%
+      3h:  46.5%
+      6h:  46.1%
+     12h:  43.0%
+     24h:  40.8%
+     48h:  38.7%
+     72h:  41.5%
+    100h:  38.7%
+
+📅 Performance by Year:
+  2023:  76 coins | Win Rate:  38.2% | Avg: 100.8%
+  2024: 113 coins | Win Rate:  37.2% | Avg: 103.4%
+  2025: 230 coins | Win Rate:  39.6% | Avg:  99.7%
+
+🏆 Top 20 Performers:
+   1. PNUT/USDT:USDT :  458.8% (2024-11)
+   2. M/USDT:USDT    :  416.9% (2025-07)
+   3. 0G/USDT:USDT   :  298.6% (2025-09)
+   4. IO/USDT:USDT   :  286.1% (2024-06)
+   5. KITE/USDT:USDT :  281.4% (2025-10)
+   6. RARE/USDT:USDT :  258.9% (2024-08)
+   7. UB/USDT:USDT   :  235.5% (2025-09)
+   8. AIOT/USDT:USDT :  233.9% (2025-04)
+   9. NEIRO/USDT:USDT:  228.4% (2024-09)
+  10. CLO/USDT:USDT  :  228.0% (2025-10)
+  11. AVNT/USDT:USDT :  224.3% (2025-09)
+  12. STBL/USDT:USDT :  223.0% (2025-09)
+  13. LQTY/USDT:USDT :  204.3% (2023-03)
+  14. ASTER/USDT:USDT:  199.0% (2025-09)
+  15. PTB/USDT:USDT  :  198.0% (2025-09)
+  16. MITO/USDT:USDT :  193.5% (2025-08)
+  17. SCRT/USDT:USDT :  189.9% (2024-11)
+  18. NEWT/USDT:USDT :  187.6% (2025-06)
+  19. PROMPT/USDT:USDT:  187.0% (2025-04)
+  20. ENA/USDT:USDT  :  185.1% (2024-04)
+
+💥 Bottom 20 Performers:
+   1. RVV/USDT:USDT  :   42.9% (2025-10)
+   2. BAN/USDT:USDT  :   41.9% (2024-11)
+   3. 42/USDT:USDT   :   41.4% (2025-10)
+   4. FF/USDT:USDT   :   41.1% (2025-09)
+   5. MIRA/USDT:USDT :   41.1% (2025-09)
+   6. ZBT/USDT:USDT  :   39.8% (2025-10)
+   7. LYN/USDT:USDT  :   38.8% (2025-10)
+   8. TST/USDT:USDT  :   38.8% (2025-02)
+   9. TRUST/USDT:USDT:   38.2% (2025-11)
+  10. COAI/USDT:USDT :   37.8% (2025-09)
+  11. GUN/USDT:USDT  :   36.7% (2025-03)
+  12. SXT/USDT:USDT  :   34.3% (2025-05)
+  13. EDEN/USDT:USDT :   34.0% (2025-09)
+  14. LINEA/USDT:USDT:   33.9% (2025-09)
+  15. VVV/USDT:USDT  :   31.5% (2025-01)
+  16. COMMON/USDT:USDT:   27.0% (2025-10)
+  17. ALLO/USDT:USDT :   26.8% (2025-11)
+  18. MELANIA/USDT:USDT:   24.3% (2025-01)
+  19. HANA/USDT:USDT :   18.6% (2025-09)
+  20. FIO/USDT:USDT  :    7.4% (2024-09)
+
+💡 Investment Strategy Recommendations:
+  Optimal Sell Point: 0min after listing (Win Rate: 100.0%)
+  Strategy Grade: 🟡 CONSERVATIVE (Moderate average returns)
+
+⚠️  Risk Management:
+  Probability of >10% loss: 46.3%
+  Recommended stop-loss: 90% (-10% loss)
+
+======================================================================

@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*.local
+*.csv
+*.xlsx
+__pycache__
+venv
+env
+
