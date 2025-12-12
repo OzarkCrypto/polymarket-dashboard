@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// 캐시 설정: 마켓 목록은 5분마다 재검증
+export const revalidate = 300
+
 export async function GET(request: NextRequest) {
   try {
     // 직접 Polymarket API 호출 (Python 없이)
     try {
-      // 1. Tech 카테고리 tag_id 찾기
+      // 1. Tech 카테고리 tag_id 찾기 (태그는 거의 변하지 않으므로 긴 캐시)
       const tagsResponse = await fetch('https://gamma-api.polymarket.com/tags', {
         headers: {
           'Accept': 'application/json',
         },
-        cache: 'no-store' // Vercel에서 revalidate 옵션 문제 방지
+        next: { revalidate: 3600 } // 1시간 캐시 (태그는 거의 변하지 않음)
       })
       
       let techTagId = null
@@ -36,7 +39,7 @@ export async function GET(request: NextRequest) {
         headers: {
           'Accept': 'application/json',
         },
-        cache: 'no-store' // Vercel에서 revalidate 옵션 문제 방지
+        next: { revalidate: 300 } // 5분 캐시 (마켓 목록은 자주 변경되지만 완전 실시간 불필요)
       })
       
       if (marketsResponse.ok) {
@@ -80,7 +83,12 @@ export async function GET(request: NextRequest) {
           count: normalizedMarkets.length,
           markets: normalizedMarkets,
           timestamp: new Date().toISOString(),
-        }, { status: 200 })
+        }, { 
+          status: 200,
+          headers: {
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          }
+        })
       } else {
         // API 응답이 실패한 경우
         const errorText = await marketsResponse.text().catch(() => 'Unknown error')

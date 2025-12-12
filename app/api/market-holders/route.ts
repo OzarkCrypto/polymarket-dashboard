@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         headers: {
           'Accept': 'application/json',
         },
+        next: { revalidate: 60 } // 1분 캐시 (홀더 정보는 상대적으로 자주 변경)
       })
       
       if (holdersResponse.ok) {
