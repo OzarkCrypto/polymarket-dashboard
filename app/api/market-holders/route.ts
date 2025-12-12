@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { RATE_LIMITS, getRecommendedCacheTTL } from '@/app/lib/rateLimiter'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,11 +20,13 @@ export async function GET(request: NextRequest) {
       // condition_id는 token address 형식일 수 있으므로 변환 필요
       const holdersUrl = `https://data-api.polymarket.com/holders?market=${conditionId}&limit=${limit}`
       
+      // Rate Limit: Data API General = 200 requests / 10초
+      // 1분 캐시 = 초당 0.017 요청 (안전)
       const holdersResponse = await fetch(holdersUrl, {
         headers: {
           'Accept': 'application/json',
         },
-        next: { revalidate: 60 } // 1분 캐시 (홀더 정보는 상대적으로 자주 변경)
+        next: { revalidate: getRecommendedCacheTTL('holders') } // 1분 캐시
       })
       
       if (holdersResponse.ok) {

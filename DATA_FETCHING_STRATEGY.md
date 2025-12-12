@@ -104,14 +104,29 @@ revalidatePath('/api/tech-markets')
 
 ## 🔧 Rate Limit 고려사항
 
-**Polymarket Rate Limits**:
-- Data API: 200 requests / 10초
-- Gamma API: 공개 문서에 명시되지 않음 (보수적으로 가정)
+**Polymarket 공식 Rate Limits** ([문서](https://docs.polymarket.com/quickstart/introduction/rate-limits)):
+
+### GAMMA API
+- **GAMMA (General)**: 750 requests / 10초
+- **GAMMA /markets**: 125 requests / 10초
+- **GAMMA Tags**: 100 requests / 10초
+- **GAMMA /events**: 100 requests / 10초
+
+### Data API
+- **Data API (General)**: 200 requests / 10초
+- **Data API /trades**: 75 requests / 10초
+
+### 현재 사용 중인 엔드포인트
+- `/tags` (GAMMA): **100 requests / 10초** → 최소 100ms 간격
+- `/markets` (GAMMA): **125 requests / 10초** → 최소 80ms 간격
+- `/holders` (Data API): **200 requests / 10초** → 최소 50ms 간격
 
 **권장사항**:
-- 최소 1초당 1요청 이하로 제한
-- 캐싱으로 실제 API 호출 최소화
-- 에러 시 exponential backoff
+- 태그 API: 1시간 캐시 (거의 변하지 않음) → 초당 0.00003 요청
+- 마켓 API: 5분 캐시 → 초당 0.003 요청 (안전)
+- 홀더 API: 1분 캐시 → 초당 0.017 요청 (안전)
+- Rate limit은 **throttling 방식** (요청이 지연되지만 거부되지 않음)
+- 에러 시 exponential backoff 적용 권장
 
 ## 💡 실전 예시
 

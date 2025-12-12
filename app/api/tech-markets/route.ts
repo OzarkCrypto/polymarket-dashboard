@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { RATE_LIMITS, getRecommendedCacheTTL } from '@/app/lib/rateLimiter'
 
 // 캐시 설정: 마켓 목록은 5분마다 재검증
-export const revalidate = 300
+// Rate Limit: GAMMA /markets = 125 requests / 10초
+// 5분 캐시 = 초당 0.003 요청 (매우 안전)
+export const revalidate = getRecommendedCacheTTL('markets')
 
 export async function GET(request: NextRequest) {
   try {
     // 직접 Polymarket API 호출 (Python 없이)
     try {
-      // 1. Tech 카테고리 tag_id 찾기 (태그는 거의 변하지 않으므로 긴 캐시)
+      // 1. Tech 카테고리 tag_id 찾기
+      // Rate Limit: GAMMA Tags = 100 requests / 10초
+      // 1시간 캐시 = 초당 0.00003 요청 (매우 안전)
       const tagsResponse = await fetch('https://gamma-api.polymarket.com/tags', {
         headers: {
           'Accept': 'application/json',
         },
-        next: { revalidate: 3600 } // 1시간 캐시 (태그는 거의 변하지 않음)
+        next: { revalidate: getRecommendedCacheTTL('tags') } // 1시간 캐시
       })
       
       let techTagId = null
@@ -35,11 +40,13 @@ export async function GET(request: NextRequest) {
         ? `https://gamma-api.polymarket.com/markets?closed=false&limit=100&tag_id=${techTagId}`
         : 'https://gamma-api.polymarket.com/markets?closed=false&limit=100'
       
+      // Rate Limit: GAMMA /markets = 125 requests / 10초
+      // 5분 캐시 = 초당 0.003 요청 (매우 안전)
       const marketsResponse = await fetch(marketsUrl, {
         headers: {
           'Accept': 'application/json',
         },
-        next: { revalidate: 300 } // 5분 캐시 (마켓 목록은 자주 변경되지만 완전 실시간 불필요)
+        next: { revalidate: getRecommendedCacheTTL('markets') } // 5분 캐시
       })
       
       if (marketsResponse.ok) {
