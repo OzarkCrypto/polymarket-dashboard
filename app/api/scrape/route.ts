@@ -2,25 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const maxPages = parseInt(searchParams.get('pages') || '3')
-    const category = searchParams.get('category') || null
+    const category = request.nextUrl.searchParams.get('category') || 'tech'
     
-    // Call Python scraper via API route
-    // In Vercel, we'll use the Python serverless function
-    // For local dev, we can call the Python script directly
-    
+    // Tech 마켓 API로 리다이렉트
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
       : 'http://localhost:3000'
     
     try {
-      // Try to call Python API (for Vercel deployment)
-      let pythonApiUrl = `${baseUrl}/api/scrape-py?pages=${maxPages}`
-      if (category) {
-        pythonApiUrl += `&category=${category}`
-      }
-      const response = await fetch(pythonApiUrl, {
+      const response = await fetch(`${baseUrl}/api/tech-markets?category=${category}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -31,28 +21,15 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(data)
       }
     } catch (error) {
-      console.log('Python API not available, using fallback')
+      console.log('Tech markets API error:', error)
     }
     
-    // Fallback: Simple mock data or direct scraping
-    // For production, this should call the Python scraper
-    const mockMarkets = [
-      {
-        title: 'What day will OpenAI release a new frontier model?',
-        description: 'Prediction market for OpenAI frontier model release date',
-        link: 'https://polymarket.com/event/what-day-will-openai-release-a-new-frontier-model',
-        matched_companies: 'openai',
-        has_insider_potential: true,
-        scraped_at: new Date().toISOString(),
-      },
-    ]
-    
+    // Fallback: 빈 데이터
     return NextResponse.json({
-      success: true,
-      count: mockMarkets.length,
-      markets: mockMarkets,
+      success: false,
+      error: 'Failed to fetch markets',
+      markets: [],
       timestamp: new Date().toISOString(),
-      note: 'Using fallback data. Python scraper will be used in production.',
     })
     
   } catch (error: any) {
