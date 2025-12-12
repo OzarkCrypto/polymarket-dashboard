@@ -1,5 +1,5 @@
 {
-  "name": "polymarket-company-dashboard",
+  "name": "polymarket_company_markets",
   "version": "1.0.0",
   "description": "Polymarket 기업 관련 마켓 대시보드",
   "scripts": {
