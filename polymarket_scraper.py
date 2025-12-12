@@ -110,10 +110,14 @@ class PolymarketScraper:
                                 if isinstance(item, dict):
                                     title = item.get('title') or item.get('question') or item.get('name', '')
                                     if title:
+                                        slug = item.get('slug', '') or item.get('id', '')
+                                        link = item.get('url', '')
+                                        if not link and slug:
+                                            link = f"{self.base_url}/event/{slug}"
                                         markets.append({
                                             'title': title,
                                             'description': item.get('description', ''),
-                                            'link': item.get('url') or item.get('slug', ''),
+                                            'link': link,
                                             'scraped_at': datetime.now().isoformat()
                                         })
             except (json.JSONDecodeError, AttributeError):
@@ -146,21 +150,58 @@ class PolymarketScraper:
         
         return markets
     
-    def fetch_markets_api(self, limit: int = 100) -> List[Dict]:
+    def get_category_tag_id(self, category_name: str = "tech") -> Optional[str]:
+        """카테고리 이름으로 tag_id 찾기"""
+        try:
+            tags_url = "https://gamma-api.polymarket.com/tags"
+            response = self.session.get(tags_url, timeout=15)
+            
+            if response.status_code == 200:
+                tags = response.json()
+                if isinstance(tags, list):
+                    for tag in tags:
+                        if isinstance(tag, dict):
+                            label = tag.get('label', '').lower()
+                            if category_name.lower() in label or label in category_name.lower():
+                                return tag.get('id')
+                elif isinstance(tags, dict):
+                    # 응답이 dict인 경우
+                    if 'data' in tags:
+                        for tag in tags['data']:
+                            label = tag.get('label', '').lower()
+                            if category_name.lower() in label or label in category_name.lower():
+                                return tag.get('id')
+        except Exception as e:
+            print(f"Error fetching tags: {e}")
+        
+        return None
+    
+    def fetch_markets_api(self, limit: int = 100, category: Optional[str] = None) -> List[Dict]:
         """Polymarket API를 통해 마켓 데이터 가져오기"""
         markets = []
         
-        # Polymarket GraphQL API 시도
+        # 카테고리 필터링을 위한 tag_id 가져오기
+        tag_id = None
+        if category:
+            tag_id = self.get_category_tag_id(category)
+            if tag_id:
+                print(f"✅ '{category}' 카테고리 tag_id: {tag_id}")
+            else:
+                print(f"⚠️  '{category}' 카테고리 tag_id를 찾지 못했습니다. 전체 마켓을 가져옵니다.")
+        
+        # Polymarket Markets API 시도
         try:
-            # Polymarket의 GraphQL 엔드포인트
-            graphql_url = "https://gamma-api.polymarket.com/events"
+            markets_url = "https://gamma-api.polymarket.com/markets"
+            params = {
+                'closed': 'false',
+                'limit': limit,
+                'offset': 0
+            }
             
-            # 간단한 쿼리로 시도
-            response = self.session.get(
-                graphql_url,
-                params={'limit': limit, 'active': 'true'},
-                timeout=15
-            )
+            if tag_id:
+                params['tag_id'] = tag_id
+            
+            response = self.session.get(markets_url, params=params, timeout=15)
             
             if response.status_code == 200:
                 data = response.json()
@@ -174,13 +215,48 @@ class PolymarketScraper:
                         markets = data['events']
                     elif 'markets' in data:
                         markets = data['markets']
+                    
+                    # markets 리스트 안에 data가 있는 경우
+                    if markets and len(markets) > 0 and isinstance(markets[0], dict) and 'data' in markets[0]:
+                        markets = markets[0]['data']
+                
+                # 마켓 데이터 정규화
+                normalized_markets = []
+                for market in markets:
+                    if isinstance(market, dict):
+                        # Polymarket API 응답 구조에 맞게 정규화
+                        title = market.get('question') or market.get('title') or market.get('name', '')
+                        if title:
+                            slug = market.get('slug', '') or market.get('id', '')
+                            link = market.get('url', '')
+                            if not link and slug:
+                                link = f"{self.base_url}/event/{slug}"
+                            
+                            # conditionId 추출
+                            condition_id = market.get('conditionId') or market.get('condition_id') or market.get('id') or ''
+                            if not condition_id and slug:
+                                condition_id = slug
+                            
+                            normalized_markets.append({
+                                'title': title,
+                                'question': title,  # API와 일관성 유지
+                                'description': market.get('description', ''),
+                                'link': link,
+                                'conditionId': condition_id,
+                                'id': market.get('id') or slug or condition_id,
+                                'slug': slug,
+                                'outcomes': market.get('outcomes', ['Yes', 'No']),
+                                'closed': market.get('closed', False),
+                                'scraped_at': datetime.now().isoformat()
+                            })
+                markets = normalized_markets
         except Exception as e:
             print(f"API fetch failed: {e}")
         
         # API 실패 시 웹 스크래핑으로 폴백
         if not markets:
             try:
-                html = self.fetch_markets_page()
+                html = self.fetch_markets_page(category=category)
                 if html:
                     markets = self.parse_markets_from_html(html)
             except Exception as e:
@@ -216,23 +292,32 @@ class PolymarketScraper:
         filtered = []
         
         for market in markets:
-            title = market.get('title', '')
-            description = market.get('description', '')
+            # 다양한 필드명에서 title 가져오기
+            title = market.get('title', '') or market.get('question', '') or market.get('name', '')
+            description = market.get('description', '') or market.get('desc', '')
             
             is_company, companies = self.is_company_related(title, description)
             has_insider_potential = self.has_insider_info_potential(title, description)
             
             if is_company:
-                market['is_company_related'] = True
-                market['matched_companies'] = ', '.join(companies)
-                market['has_insider_potential'] = has_insider_potential
-                filtered.append(market)
+                # 표준화된 필드명으로 저장
+                filtered_market = {
+                    'title': title,
+                    'description': description,
+                    'link': market.get('link', '') or market.get('url', ''),
+                    'is_company_related': True,
+                    'matched_companies': ', '.join(companies),
+                    'has_insider_potential': has_insider_potential,
+                    'scraped_at': market.get('scraped_at', datetime.now().isoformat())
+                }
+                filtered.append(filtered_market)
         
         return pd.DataFrame(filtered)
     
-    def scrape_all_markets(self, max_pages: int = 10, use_selenium: bool = False) -> pd.DataFrame:
+    def scrape_all_markets(self, max_pages: int = 10, use_selenium: bool = False, category: Optional[str] = None) -> pd.DataFrame:
         """모든 마켓 수집 및 필터링"""
-        print("🔍 Polymarket 마켓 수집 중...")
+        category_text = f" ({category} 카테고리)" if category else ""
+        print(f"🔍 Polymarket 마켓 수집 중{category_text}...")
         all_markets = []
         
         # Selenium 사용 옵션
@@ -250,7 +335,10 @@ class PolymarketScraper:
                 options.add_argument('--disable-dev-shm-usage')
                 
                 driver = webdriver.Chrome(options=options)
-                driver.get(f"{self.base_url}/markets")
+                url = f"{self.base_url}/markets"
+                if category:
+                    url += f"?category={category}"
+                driver.get(url)
                 
                 # 페이지 로드 대기
                 WebDriverWait(driver, 10).until(
@@ -277,14 +365,14 @@ class PolymarketScraper:
         
         # API 방식 시도 (Selenium 미사용 또는 실패 시)
         if not use_selenium or len(all_markets) == 0:
-            markets = self.fetch_markets_api(limit=500)
+            markets = self.fetch_markets_api(limit=500, category=category)
             if markets:
                 all_markets.extend(markets)
                 print(f"✅ API를 통해 {len(markets)}개 마켓 수집")
             else:
                 # 웹 스크래핑 방식
                 for page in range(1, max_pages + 1):
-                    html = self.fetch_markets_page(page=page)
+                    html = self.fetch_markets_page(page=page, category=category)
                     if html:
                         markets = self.parse_markets_from_html(html)
                         if not markets:
@@ -299,7 +387,7 @@ class PolymarketScraper:
         seen_titles = set()
         unique_markets = []
         for market in all_markets:
-            title = market.get('title', '')
+            title = market.get('title', '') or market.get('question', '')
             if title and title not in seen_titles:
                 seen_titles.add(title)
                 unique_markets.append(market)
@@ -315,6 +403,10 @@ class PolymarketScraper:
             print(f"   - 내부 정보 우위 가능성: {df['has_insider_potential'].sum()}개")
         
         return df
+    
+    def scrape_tech_markets(self, max_pages: int = 10, use_selenium: bool = False) -> pd.DataFrame:
+        """Tech 카테고리 마켓만 수집"""
+        return self.scrape_all_markets(max_pages=max_pages, use_selenium=use_selenium, category="tech")
 
 
 def main():

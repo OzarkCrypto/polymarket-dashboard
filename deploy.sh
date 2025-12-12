@@ -70,3 +70,5 @@ echo ""
 echo "📊 대시보드가 배포되었습니다!"
 echo "   Vercel 대시보드에서 URL을 확인하세요: https://vercel.com/dashboard"
 
+
+

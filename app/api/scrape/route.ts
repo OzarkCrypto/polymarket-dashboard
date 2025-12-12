@@ -4,6 +4,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const maxPages = parseInt(searchParams.get('pages') || '3')
+    const category = searchParams.get('category') || null
     
     // Call Python scraper via API route
     // In Vercel, we'll use the Python serverless function
@@ -15,7 +16,10 @@ export async function GET(request: NextRequest) {
     
     try {
       // Try to call Python API (for Vercel deployment)
-      const pythonApiUrl = `${baseUrl}/api/scrape-py?pages=${maxPages}`
+      let pythonApiUrl = `${baseUrl}/api/scrape-py?pages=${maxPages}`
+      if (category) {
+        pythonApiUrl += `&category=${category}`
+      }
       const response = await fetch(pythonApiUrl, {
         headers: {
           'Content-Type': 'application/json',

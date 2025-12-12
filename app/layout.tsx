@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Polymarket 기업 마켓 대시보드',
-  description: 'Polymarket에서 기업 관련 마켓을 필터링하여 내부 정보 우위가 있을 수 있는 마켓을 찾습니다.',
+  title: 'Polymarket Tech 마켓 & 홀더 대시보드',
+  description: 'Tech 카테고리의 액티브 마켓과 각 마켓의 Yes/No 탑10 홀더를 확인하세요.',
 }
 
 export default function RootLayout({

@@ -57,16 +57,36 @@ def handler(req):
             query = dict(urllib.parse.parse_qsl(query))
         
         max_pages = int(query.get('pages', '3'))
+        category = query.get('category', None)  # 'tech' 등 카테고리 필터
         
         # Try to use PolymarketScraper if available
         try:
             scraper = PolymarketScraper()
-            df = scraper.scrape_all_markets(max_pages=max_pages, use_selenium=False)
+            if category:
+                df = scraper.scrape_all_markets(max_pages=max_pages, use_selenium=False, category=category)
+            else:
+                df = scraper.scrape_all_markets(max_pages=max_pages, use_selenium=False)
+            
+            # DataFrame을 dict로 변환할 때 conditionId 포함
+            markets_list = []
+            if len(df) > 0:
+                for _, row in df.iterrows():
+                    market_dict = row.to_dict()
+                    # conditionId가 없으면 추가 시도
+                    if 'conditionId' not in market_dict or not market_dict.get('conditionId'):
+                        # link에서 slug 추출하여 conditionId로 사용
+                        link = market_dict.get('link', '')
+                        if link:
+                            import re
+                            slug_match = re.search(r'/event/([^/?]+)', link)
+                            if slug_match:
+                                market_dict['conditionId'] = slug_match.group(1)
+                    markets_list.append(market_dict)
             
             result = {
                 'success': True,
-                'count': len(df),
-                'markets': df.to_dict('records') if len(df) > 0 else [],
+                'count': len(markets_list),
+                'markets': markets_list,
                 'timestamp': datetime.now().isoformat()
             }
             
