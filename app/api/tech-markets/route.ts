@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
         headers: {
           'Accept': 'application/json',
         },
-        next: { revalidate: 3600 } // 1시간 캐시
+        cache: 'no-store' // Vercel에서 revalidate 옵션 문제 방지
       })
       
       let techTagId = null
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         headers: {
           'Accept': 'application/json',
         },
-        next: { revalidate: 300 } // 5분 캐시
+        cache: 'no-store' // Vercel에서 revalidate 옵션 문제 방지
       })
       
       if (marketsResponse.ok) {

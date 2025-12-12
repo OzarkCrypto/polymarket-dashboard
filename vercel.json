@@ -1,16 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "@vercel/python"
-    }
-  },
-  "ignore": [
-    "api/scrape-py/**",
-    "*.py",
-    "requirements*.txt",
-    "polymarket_*.py"
-  ]
+  "installCommand": "npm install"
 }

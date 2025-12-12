@@ -6,4 +6,11 @@ node_modules
 __pycache__
 venv
 env
+*.py
+!api/**/*.py
+polymarket_scraper.py
+polymarket_dashboard.py
+polymarket_tech_dashboard.py
+requirements.txt
+requirements-vercel.txt
 
