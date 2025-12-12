@@ -80,25 +80,38 @@ export async function GET(request: NextRequest) {
           count: normalizedMarkets.length,
           markets: normalizedMarkets,
           timestamp: new Date().toISOString(),
-        })
+        }, { status: 200 })
+      } else {
+        // API 응답이 실패한 경우
+        const errorText = await marketsResponse.text().catch(() => 'Unknown error')
+        console.error('Markets API error:', marketsResponse.status, errorText)
+        return NextResponse.json({
+          success: false,
+          error: `API returned ${marketsResponse.status}`,
+          markets: [],
+          timestamp: new Date().toISOString(),
+        }, { status: 200 }) // 클라이언트에서 처리할 수 있도록 200 반환
       }
     } catch (error: any) {
       console.error('Direct API error:', error)
+      return NextResponse.json({
+        success: false,
+        error: error.message || 'Failed to fetch markets',
+        markets: [],
+        timestamp: new Date().toISOString(),
+      }, { status: 200 }) // 클라이언트에서 처리할 수 있도록 200 반환
     }
     
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch markets',
-      markets: [],
-    })
-    
   } catch (error: any) {
+    console.error('Unexpected error:', error)
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Unknown error',
+        markets: [],
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 200 } // 클라이언트에서 처리할 수 있도록 200 반환
     )
   }
 }

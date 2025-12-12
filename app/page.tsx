@@ -43,21 +43,46 @@ export default function Home() {
   const fetchMarkets = async () => {
     setLoading(true)
     try {
-      const response = await axios.get('/api/tech-markets')
-      if (response.data.success && response.data.markets) {
-        const marketsWithHolders: MarketWithHolders[] = response.data.markets.map((market: Market) => ({
-          ...market,
-          yesHolders: [],
-          noHolders: [],
-          loadingHolders: false,
-        }))
-        setMarkets(marketsWithHolders)
+      const response = await axios.get('/api/tech-markets', {
+        timeout: 30000, // 30초 타임아웃
+      })
+      
+      if (response.status === 200 && response.data) {
+        if (response.data.success && response.data.markets) {
+          const marketsWithHolders: MarketWithHolders[] = response.data.markets.map((market: Market) => ({
+            ...market,
+            yesHolders: [],
+            noHolders: [],
+            loadingHolders: false,
+          }))
+          setMarkets(marketsWithHolders)
+        } else {
+          // API가 성공했지만 데이터가 없는 경우
+          setMarkets([])
+          const errorMsg = response.data.error || '마켓 데이터를 찾을 수 없습니다'
+          console.warn('No markets found:', errorMsg)
+          alert('데이터 수집에 실패했습니다: ' + errorMsg)
+        }
       } else {
-        alert('데이터 수집에 실패했습니다: ' + (response.data.error || 'Unknown error'))
+        throw new Error('Invalid response format')
       }
     } catch (error: any) {
       console.error('Error fetching markets:', error)
-      alert('데이터를 가져오는 중 오류가 발생했습니다: ' + (error.message || 'Unknown error'))
+      setMarkets([])
+      
+      let errorMessage = '데이터를 가져오는 중 오류가 발생했습니다'
+      if (error.response) {
+        // 서버 응답이 있는 경우
+        errorMessage += ': ' + (error.response.data?.error || `HTTP ${error.response.status}`)
+      } else if (error.request) {
+        // 요청은 보냈지만 응답이 없는 경우
+        errorMessage += ': 서버에 연결할 수 없습니다'
+      } else {
+        // 요청 설정 중 오류
+        errorMessage += ': ' + (error.message || 'Unknown error')
+      }
+      
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }

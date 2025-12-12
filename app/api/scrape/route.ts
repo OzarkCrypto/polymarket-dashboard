@@ -96,12 +96,15 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error: any) {
+    console.error('Unexpected error:', error)
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Unknown error',
+        markets: [],
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 200 } // 클라이언트에서 처리할 수 있도록 200 반환
     )
   }
 }
