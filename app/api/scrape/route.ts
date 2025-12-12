@@ -81,19 +81,27 @@ export async function GET(request: NextRequest) {
           count: normalizedMarkets.length,
           markets: normalizedMarkets,
           timestamp: new Date().toISOString(),
-        })
+        }, { status: 200 })
+      } else {
+        // API 응답이 실패한 경우
+        const errorText = await marketsResponse.text().catch(() => 'Unknown error')
+        console.error('Markets API error:', marketsResponse.status, errorText)
+        return NextResponse.json({
+          success: false,
+          error: `API returned ${marketsResponse.status}`,
+          markets: [],
+          timestamp: new Date().toISOString(),
+        }, { status: 200 })
       }
     } catch (error: any) {
       console.error('Direct API error:', error)
+      return NextResponse.json({
+        success: false,
+        error: error.message || 'Failed to fetch markets',
+        markets: [],
+        timestamp: new Date().toISOString(),
+      }, { status: 200 })
     }
-    
-    // Fallback: 빈 데이터
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch markets',
-      markets: [],
-      timestamp: new Date().toISOString(),
-    })
     
   } catch (error: any) {
     console.error('Unexpected error:', error)
